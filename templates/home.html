@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title%}Homepage{% endblock%}
+
+{% block content %}
+<h1>Hello {{name}}, you are on the home page</h1>
+
+{% if display %}
+<h2>This is being displayed.</h2>
+{% else %}
+<h2>Nothing to display!</h2>
+{% endif %} 
+
+{% for x in mylist %}
+<h3>{{x}}</h3>
+{% endfor %} 
+
+{% for x in listofdictionaries%}
+<h4>{{x.name}}</h4>
+{% endfor %}
+
+<img src="{{ url_for('static', filename='images/prettyprinted.png') }}">
+{% endblock%}
