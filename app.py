@@ -16,7 +16,7 @@ def get_db():
     g.sqlite_db = connect_db()
   return g.sqlite_db
 
-@app.teardown_appcontext()
+@app.teardown_appcontext
 def close_db(error):
   if hasattr(g, 'sqlite_db'):
     g.sqlite_db.close()
@@ -30,7 +30,12 @@ def index():
 @app.route("/home/<string:name>", methods=['POST', 'GET'])
 def home(name):
   session['name'] = name
-  return render_template('home.html', name=name, display=False, mylist=['one', 'two', 'three', 'four'], listofdictionaries=[{'name' : 'Zach'}, {'name' : 'Zoey'}])
+  db = get_db()
+  cur = db.execute('select id, name, location from users')
+  results = cur.fetchall()
+  return render_template('home.html', name=name, display=False,
+                          mylist=['one', 'two', 'three', 'four'], listofdictionaries=[{'name' : 'Zach'}, {'name' : 'Zoey'}],
+                          results = results)
 
 @app.route("/json")
 def json():
@@ -54,6 +59,10 @@ def theform():
   else:
     name = request.form["name"]
     location = request.form["location"]
+
+    db = get_db()
+    db.execute('insert into users (name, location) values (?, ?)', [name, location])
+    db.commit()
   #   return f"Hello {name} from {location}! You have submitted the form successfully"
     return redirect(url_for('home', name=name, location=location))
 
@@ -64,6 +73,13 @@ def processjson():
   location = data['location']
   randomlist = data['randomlist']
   return jsonify({'result' : 'Success!', 'name' : name, 'location' : location, "randomkeyinlist" : randomlist[1]})
+
+@app.route('/viewresults')
+def viewresults():
+  db = get_db()
+  cur = db.execute('select id, name, location from users')
+  results = cur.fetchall()
+  return f"<h1>The ID is {results[2]['id']}. The name is {results[2]['name']}. The location is {results[2]['location']}.</h1>"
 
 if __name__ == '__main__':
   app.run()
